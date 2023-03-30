@@ -3,14 +3,17 @@ import mediapipe as mp
 import time
 from pyfirmata2 import Arduino, SERVO
 
-board = Arduino(Arduino.AUTODETECT)
+port ='COM5'
+board = Arduino(port)
+#board = Arduino(Arduino.AUTODETECT)
 
 pin = 10 
 
 board.digital[pin].mode = SERVO
 
 def Servo_W(pin ,angle_W):
-    board.digital[pin].write(angle_W)
+    if(angle_W > 0):
+        board.digital[pin].write(angle_W)
 
 cap = cv2.VideoCapture(0)
 mpHands = mp.solutions.hands
@@ -30,7 +33,6 @@ while True:
         # print(result.multi_hand_landmarks)
         imgHeight = img.shape[0]
         imgWidth = img.shape[1]
-
         if result.multi_hand_landmarks:
             for handLms in result.multi_hand_landmarks:
                 mpDraw.draw_landmarks(img, handLms, mpHands.HAND_CONNECTIONS, handLmsStyle, handConStyle)
