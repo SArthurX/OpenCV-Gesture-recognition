@@ -1,6 +1,16 @@
 import cv2
 import mediapipe as mp
 import time
+from pyfirmata2 import Arduino, SERVO
+
+board = Arduino(Arduino.AUTODETECT)
+
+pin = 10 
+
+board.digital[pin].mode = SERVO
+
+def Servo_W(pin ,angle_W):
+    board.digital[pin].write(angle_W)
 
 cap = cv2.VideoCapture(0)
 mpHands = mp.solutions.hands
@@ -28,11 +38,13 @@ while True:
                     xPos = int(lm.x * imgWidth)
                     yPos = int(lm.y * imgHeight)
 
-                    # cv2.putText(img, str(i), (xPos-25, yPos+5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 2)
+                    cv2.putText(img, str(i), (xPos-25, yPos+5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 2)
 
-                    # if i == 4:
-                    #     cv2.circle(img, (xPos, yPos), 20, (166, 56, 56), cv2.FILLED)
-                    # print(i, xPos, yPos)
+                    if i == 8:
+                        cv2.circle(img, (xPos, yPos), 20, (255, 0, 0), cv2.FILLED)
+                        if(xPos*0.3<180):
+                            Servo_W(pin,xPos*0.3)
+                    print(i, xPos, yPos)
 
         cTime = time.time()
         fps = 1/(cTime-pTime)
