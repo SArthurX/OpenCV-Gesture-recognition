@@ -5,16 +5,22 @@ from pyfirmata2 import Arduino, SERVO
 from time import sleep 
 
 board = Arduino(Arduino.AUTODETECT)
-pin = 10 
+pin =[10,11]
 
-board.digital[pin].mode = SERVO
+board.digital[pin[0]].mode = SERVO
+board.digital[pin[1]].mode = SERVO
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
-def Servo_W(pin ,angle_w):
-    board.digital[pin].write(angle_w)
+def Servo_X(pin ,angle_W):
+    if(angle_W >= 0):
+        board.digital[pin[0]].write(angle_W)
+
+def Servo_Y(pin ,angle_W):
+    if(angle_W >= 0):
+        board.digital[pin[1]].write(angle_W)
 
 
 # 根據兩點的座標，計算角度
@@ -74,50 +80,54 @@ def hand_pos(finger_angle):
 
     # 小於 50 表示手指伸直，大於等於 50 表示手指捲縮
     if f1<50 and f2>=50 and f3>=50 and f4>=50 and f5>=50:
-        Servo_W(pin,100)
+        #Servo_W(pin,100)
         return 'good'
     elif f1>=50 and f2>=50 and f3<50 and f4>=50 and f5>=50:
-        Servo_W(pin,150)
+       # Servo_W(pin,150)
         return 'FUCK!'
     elif f1<50 and f2<50 and f3>=50 and f4>=50 and f5<50:
-        Servo_W(pin,170)
+        #Servo_W(pin,170)
         return 'ROCK!'
     elif f1>=50 and f2>=50 and f3>=50 and f4>=50 and f5>=50:
-        Servo_W(pin,0)
+        Servo_Y(pin,0)
+        Servo_X(pin,0)
         return '0'
     elif f1>=50 and f2>=50 and f3>=50 and f4>=50 and f5<50:
-        Servo_W(pin,0)
+        #Servo_W(pin,0)
         return 'pink'
     elif f1>=50 and f2<50 and f3>=50 and f4>=50 and f5>=50:
-        Servo_W(pin,10)
+        if(x*0.3<180):
+            Servo_X(pin,x*0.3)
         return '1'
     elif f1>=50 and f2<50 and f3<50 and f4>=50 and f5>=50:
-        Servo_W(pin,20)
+        #Servo_W(pin,20)
+        if(y*0.4<180):
+            Servo_Y(pin,(y-200)*0.5)
         return '2'
     elif f1>=50 and f2>=50 and f3<50 and f4<50 and f5<50:
         return 'ok'
     elif f1<50 and f2>=50 and f3<50 and f4<50 and f5<50:
         return 'ok'
     elif f1>=50 and f2<50 and f3<50 and f4<50 and f5>50:
-        Servo_W(pin,30)
+        #Servo_W(pin,30)
         return '3'
     elif f1>=50 and f2<50 and f3<50 and f4<50 and f5<50:
-        Servo_W(pin,40)
+        #Servo_W(pin,40)
         return '4'
     elif f1<50 and f2<50 and f3<50 and f4<50 and f5<50:
-        Servo_W(pin,50)
+        #Servo_W(pin,50)
         return '5'
     elif f1<50 and f2>=50 and f3>=50 and f4>=50 and f5<50:
-        Servo_W(pin,60)
+        #Servo_W(pin,60)
         return '6'
     elif f1<50 and f2<50 and f3>=50 and f4>=50 and f5>=50:
-        Servo_W(pin,70)
+        #Servo_W(pin,70)
         return '7'
     elif f1<50 and f2<50 and f3<50 and f4>=50 and f5>=50:
-        Servo_W(pin,80)
+        #Servo_W(pin,80)
         return '8'
     elif f1<50 and f2<50 and f3<50 and f4<50 and f5>=50:
-        Servo_W(pin,90)
+        #Servo_W(pin,90)
         return '9'
     else:
         return ''
@@ -136,7 +146,7 @@ with mp_hands.Hands(
         ret, img = cap.read()
         
         w, h = img.shape[1],img.shape[0]  #影像尺寸
-        img = cv2.flip(img, 1) #鏡像翻轉    
+          
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 轉換成 RGB 色彩
         results = hands.process(imgRGB)                # 偵測手勢
         if results.multi_hand_landmarks:
@@ -147,18 +157,22 @@ with mp_hands.Hands(
                     x = int(lm.x*w)
                     y = int(lm.y*h)
                         
+                    if i == 4:
+                        cv2.circle(img, (x, y), 20, (0, 0, 255), cv2.FILLED)                       
                     if i == 8:
                         cv2.circle(img, (x, y), 20, (255, 0, 0), cv2.FILLED)
-
-                    print (i,-x,y)
+                    if i == 12:
+                        cv2.circle(img, (x, y), 20, (0, 255, 0), cv2.FILLED) 
+                
+                    print (i,x,y)
                     finger_points.append((x,y))
                 
                 if finger_points:
                     finger_angle = hand_angle(finger_points) # 計算手指角度，回傳長度為 5 的串列
                     #print(finger_angle)                     # 印出角度 ( 有需要就開啟註解 )
                     text = hand_pos(finger_angle)            # 取得手勢所回傳的內容
-                    cv2.putText(img, text, (30,120), fontFace, 5, (255,255,255), 10, lineType) # 印出文字
-                
+                    #cv2.putText(img, text, (30,120), fontFace, 5, (255,255,255), 10, lineType) # 印出文字
+        img = cv2.flip(img, 1) #鏡像翻轉  
         cv2.imshow('sx', img)       
         if cv2.waitKey(5) == ord('q'):
             break
